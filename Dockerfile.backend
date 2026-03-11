@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
 
 ARG PYTHON_VERSION=3.14.3
-FROM python:${PYTHON_VERSION}-slim-trixie
+FROM python:${PYTHON_VERSION}-trixie
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 
 RUN groupadd --system --gid 999 nonroot \
  && useradd --system --gid 999 --uid 999 --create-home nonroot
