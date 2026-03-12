@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from routes import auth
+from routes import auth, health
 
 class User(BaseModel):
     name: str
@@ -11,6 +11,7 @@ class User(BaseModel):
 app = FastAPI()
 
 app.include_router(auth.router)
+app.include_router(health.router)
 
 @app.get("/")
 async def root():

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
+import jwt
 
-router = APIRouter()
+router = APIRouter(prefix="/auth")
 
 @router.post("/register")
 async def register():
