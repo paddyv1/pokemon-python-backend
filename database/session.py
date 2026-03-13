@@ -14,5 +14,6 @@ def get_db():
         ##improve this to logging
         print(e)
         db.rollback()
+        raise
     finally:
         db.close()
