@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
-from database.session import get_db
+from app.database.session import get_db
 from sqlalchemy.orm import Session
 
-from models.user import User
+from app.models.user import User
 router = APIRouter(prefix="/health")
 
 @router.get("/db")

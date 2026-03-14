@@ -1,18 +1,18 @@
 from datetime import timedelta
-from pydanticmodels.auth import TokenResponse
+from app.pydanticmodels.auth import TokenResponse
 from fastapi import APIRouter
-from database.session import get_db
+from app.database.session import get_db
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydanticmodels.user import UserRead, RegisterRequest
-from services.authservice import create_access_token, retrieve_user, create_user, does_user_exist, get_current_active_user, is_password_strong, does_username_password_match
+from app.pydanticmodels.user import UserRead, RegisterRequest
+from app.services.authservice import create_access_token, retrieve_user, create_user, does_user_exist, get_current_active_user, is_password_strong, does_username_password_match
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env")
 TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 

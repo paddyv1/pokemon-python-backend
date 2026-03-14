@@ -4,7 +4,7 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 from typing import List
 
 class User(Base):
