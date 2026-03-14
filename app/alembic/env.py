@@ -6,7 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from models import base
+from app.models import base
 import models.user   # ← add
 import models.team   # ← add
 import models.slot  # ← add  # noqa: F401

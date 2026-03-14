@@ -2,10 +2,10 @@ from datetime import datetime, timedelta, timezone
 from pwdlib import PasswordHash
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
-from database.session import get_db
-from pydanticmodels.auth import TokenData
-from pydanticmodels.user import UserRead as UserSchema
-from models.user import User as UserModel 
+from app.database.session import get_db
+from app.pydanticmodels.auth import TokenData
+from app.pydanticmodels.user import UserRead as UserSchema
+from app.models.user import User as UserModel 
 from typing import Annotated
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from fastapi import HTTPException, Depends, status
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env")
 
 ##fail fast here

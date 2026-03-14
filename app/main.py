@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-from routes import auth, health
-
+from app.routes import auth, health
 ##todo implement middleware
 ##todo implement logging
 ##todo implement rate limiting
