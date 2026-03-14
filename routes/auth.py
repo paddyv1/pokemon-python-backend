@@ -1,11 +1,11 @@
 from datetime import timedelta
-
+from pydanticmodels.auth import TokenResponse
 from fastapi import APIRouter
 from database.session import get_db
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydanticmodels.user import User
-from services.authservice import create_access_token, create_user, does_user_exist, get_current_active_user, get_password_hash, verify_password, is_password_strong, does_username_password_match
+from pydanticmodels.user import UserRead, RegisterRequest
+from services.authservice import create_access_token, retrieve_user, create_user, does_user_exist, get_current_active_user, is_password_strong, does_username_password_match
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -21,12 +21,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 router = APIRouter(prefix="/auth")
 
 @router.post("/register")
-async def register(username: str, password: str, db: Session = Depends(get_db)):
-    if not is_password_strong(password):
+async def register(request: RegisterRequest, db: Session = Depends(get_db)):
+    if not is_password_strong(request.password):
         return {"error": "Password is not strong enough"}
-    if does_user_exist(username, db):
+    if does_user_exist(request.username, db):
         return {"error": "User already exists"}
-    if create_user(username, password, db):
+    if create_user(request.username, request.password, db):
         return {"message": "User registered successfully"}
     return {"error": "Failed to register user"}
 
@@ -37,14 +37,13 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     if not does_username_password_match(user, form_data.password, db):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    print(BASE_DIR)
-    print(TOKEN_EXPIRE_MINUTES)
     access_token_expires = timedelta(minutes=int(TOKEN_EXPIRE_MINUTES))
+    usermodel = retrieve_user(user, db)
     access_token = create_access_token(
-        user, expires_delta=access_token_expires
+        data={"sub": usermodel.username}, expires_delta=access_token_expires
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    return TokenResponse(access_token=access_token, token_type="bearer")
 
 @router.post("/logout")
 async def logout():
@@ -52,7 +51,7 @@ async def logout():
 
 @router.get("/me")
 async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)]
-) -> User:
+    current_user: Annotated[UserRead, Depends(get_current_active_user)]
+) -> UserRead:
     return current_user
 

@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
-
 from pwdlib import PasswordHash
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from database.session import get_db
-from pydanticmodels.user import User as UserSchema
+from pydanticmodels.auth import TokenData
+from pydanticmodels.user import UserRead as UserSchema
 from models.user import User as UserModel 
 from typing import Annotated
 import jwt
@@ -14,17 +13,26 @@ import os
 from dotenv import load_dotenv
 from fastapi import HTTPException, Depends, status
 from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 load_dotenv(BASE_DIR / ".env")
 
+##fail fast here
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is missing. Add it to your .env file.")
 
+ALGORITHM = os.getenv("ALGORITHM")
+if not ALGORITHM:
+    raise RuntimeError("ALGORITHM is missing. Add it to your .env file.")
+
+TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+if not TOKEN_EXPIRE_MINUTES:
+    raise RuntimeError("ACCESS_TOKEN_EXPIRE_MINUTES is missing. Add it to your .env file.")
 
 passwordHash = PasswordHash.recommended()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 ##pass helper word fucntions
 def get_password_hash(plainPassword: str):
@@ -35,6 +43,7 @@ def verify_password(plainPassword: str, hashedPassword: str) -> bool:
 
 
 def is_password_strong(password: str) -> bool:
+    ##add real checks later
     return True
 
 ##mew user sign up function
@@ -61,27 +70,24 @@ def does_user_exist(username: str, db: Session) -> bool:
     return db.query(q.exists()).scalar()
 
 def retrieve_user(username: str, db: Session) -> UserSchema | None:
-    return db.query(UserModel).filter(UserModel.username == username).first() 
+    userDetails = db.query(UserModel).filter(UserModel.username == username).first() 
+    if userDetails:
+        return UserSchema(username=userDetails.username)
+    return None
 
 
-def create_access_token(username: str, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=int(TOKEN_EXPIRE_MINUTES)))
-    to_encode = {"sub": username, "exp": expire}
+    to_encode = data.copy()
+    to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
-
-class TokenData(BaseModel):
-    username: str | None = None
     
 ## current logged in user    
 async def get_current_active_user(
-    current_user: Annotated[UserSchema, Depends(get_current_user_normal)],
-    db: Session = Depends(get_db)
+    current_user: Annotated[UserSchema, Depends(get_current_user_normal)] # type: ignore
 ):
     return current_user
 
