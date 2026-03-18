@@ -3,7 +3,7 @@ from app.models.user import User
 def test_register_success(client, db_session):
     payload = {"username": "ashketchum", "password": "pikachu123"}
 
-    response = client.post("/auth/register", json=payload)
+    response = client.post("/api/auth/register", json=payload)
 
     assert response.status_code == 200
     assert response.json() == {"message": "User registered successfully"}
@@ -15,8 +15,8 @@ def test_register_success(client, db_session):
 def test_register_duplicate_username_returns_error(client):
     payload = {"username": "misty", "password": "staryu123"}
 
-    first = client.post("/auth/register", json=payload)
-    second = client.post("/auth/register", json=payload)
+    first = client.post("/api/auth/register", json=payload)
+    second = client.post("/api/auth/register", json=payload)
 
     assert first.status_code == 200
     assert second.status_code == 200
@@ -24,7 +24,7 @@ def test_register_duplicate_username_returns_error(client):
 
 def test_register_short_password_fails_validation(client):
     response = client.post(
-        "/auth/register",
+        "/api/auth/register",
         json={"username": "brock", "password": "short"},
     )
 
@@ -32,12 +32,12 @@ def test_register_short_password_fails_validation(client):
 
 def test_login_success_returns_token(client):
     client.post(
-        "/auth/register",
+        "/api/auth/register",
         json={"username": "gary", "password": "eevee123"},
     )
 
     response = client.post(
-        "/auth/login",
+        "/api/auth/login",
         data={"username": "gary", "password": "eevee123"},
     )
 
@@ -49,12 +49,12 @@ def test_login_success_returns_token(client):
 
 def test_login_wrong_password_returns_400(client):
     client.post(
-        "/auth/register",
+        "/api/auth/register",
         json={"username": "jessie", "password": "meowth123"},
     )
 
     response = client.post(
-        "/auth/login",
+        "/api/auth/login",
         data={"username": "jessie", "password": "wrongpass123"},
     )
 
@@ -63,7 +63,7 @@ def test_login_wrong_password_returns_400(client):
 
 def test_login_unknown_user_returns_400(client):
     response = client.post(
-        "/auth/login",
+        "/api/auth/login",
         data={"username": "unknown", "password": "whatever123"},
     )
 
@@ -71,24 +71,24 @@ def test_login_unknown_user_returns_400(client):
     assert response.json() == {"detail": "Incorrect username or password"}
 
 def test_me_requires_token(client):
-    response = client.get("/auth/me")
+    response = client.get("/api/auth/me")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Not authenticated"}
 
 def test_me_returns_current_user(client):
     client.post(
-        "/auth/register",
+        "/api/auth/register",
         json={"username": "tracey", "password": "scyther123"},
     )
     login = client.post(
-        "/auth/login",
+        "/api/auth/login",
         data={"username": "tracey", "password": "scyther123"},
     )
     token = login.json()["access_token"]
 
     response = client.get(
-        "/auth/me",
+        "/api/auth/me",
         headers={"Authorization": f"Bearer {token}"},
     )
 
