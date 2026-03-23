@@ -7,9 +7,9 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.models import base
-import models.user   # ← add
-import models.team   # ← add
-import models.slot  # ← add  # noqa: F401
+##import models.user   # ← add
+##import models.team   # ← add
+##import models.slot  # ← add  # noqa: F401
 
 import os
 from pathlib import Path
@@ -25,7 +25,8 @@ if config.config_file_name is not None:
 
 
 ##override sqlalchemy string in alembic.ini with env variable
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parents[2]
+print(f"Loading .env from {BASE_DIR / '.env'}")
 load_dotenv(BASE_DIR / ".env")
 
 database_url = os.getenv("SUPABASE_STRING")

@@ -12,6 +12,7 @@ class User(Base):
 
     id = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
     
