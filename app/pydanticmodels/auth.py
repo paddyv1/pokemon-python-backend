@@ -6,3 +6,4 @@ class TokenResponse(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+    user_id: int
