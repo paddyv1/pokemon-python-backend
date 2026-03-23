@@ -4,7 +4,8 @@ from fastapi import APIRouter
 from app.database.session import get_db
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from app.pydanticmodels.user import UserRead
+from app.services.team.teamservice import create_team_for_user
 
 from app.services.team.teammodels import TeamCreateRequest
 from app.services.authservice import get_current_active_user
@@ -16,10 +17,11 @@ router = APIRouter(prefix="/team")
 @router.post("")
 async def create_team(
     team_data: TeamCreateRequest,
-    user_id: int = Depends(get_current_active_user),
+    user: UserRead = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    return {"message": user_id}
+    await create_team_for_user(userId=user.user_id, teamName=team_data.team_name, db=db)
+    return {"message": "good"}
 
 
 ##retrieve all teams for a user

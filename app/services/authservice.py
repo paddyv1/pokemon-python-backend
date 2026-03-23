@@ -97,7 +97,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 ## current logged in user
 async def get_current_active_user(
     current_user: Annotated[UserSchema, Depends(get_current_user_normal)],  # type: ignore
-):
+) -> UserSchema:
     return current_user
 
 
