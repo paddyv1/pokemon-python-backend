@@ -19,14 +19,16 @@ from pathlib import Path
 from dotenv import load_dotenv
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import resend
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env")
 TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
-
+resend.api_key = os.getenv("resend_api_key")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 router = APIRouter(prefix="/auth")
+
 
 
 @router.post("/register")
@@ -36,7 +38,17 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     if does_user_exist(request.username, db):
         return {"error": "User already exists"}
     if create_user(request.username, request.password, request.email, db):
-        return {"message": "User registered successfully"}
+        
+        ##send email for new user
+        params: resend.Emails.SendParams = {
+        "from": "VGCC <onboarding@vgc.central.dev>",
+        "to": request.email,
+        "subject": "New User",
+        "html": "<strong>Welcome to VGC Central</strong>",
+    }
+        email: resend.Emails.SendResponse = resend.Emails.send(params)
+        
+        return {"message": f"User registered successfully with email sent{email["id"]}"}
     return {"error": "Failed to register user"}
 
 

@@ -16,6 +16,7 @@ dependencies = [
     "pyjwt>=2.11.0",
     "pytest>=9.0.2",
     "python-dotenv>=1.2.2",
+    "resend>=2.26.0",
     "sqlalchemy>=2.0.48",
 ]
 
