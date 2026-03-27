@@ -5,10 +5,16 @@ from app.database.session import get_db
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.pydanticmodels.user import UserRead
-from app.services.team.teamservice import create_team_for_user
+from app.services.team.teamservice import create_team_for_user, delete_team_for_user, update_team_for_user
 
 from app.services.team.teammodels import TeamCreateRequest
 from app.services.authservice import get_current_active_user
+
+from app.services.team.teammodels import (
+    TeamCreateResponse,
+    TeamDeleteResponse,
+    TeamUpdateResponse,
+)
 
 router = APIRouter(prefix="/team")
 
@@ -38,11 +44,14 @@ async def get_team(team_id: int):
 
 ##update team by id
 @router.put("/{team_id}")
-async def update_team(team_id: int):
-    return {"message": f"Update team with id {team_id} endpoint"}
+async def update_team(team_id: int,team_name: str, db: Session = Depends(get_db)) -> TeamUpdateResponse:
+    resp = await update_team_for_user(teamId=team_id, teamName=team_name, db=db)
+    return resp
 
 
-##delet a team by id
+
+##delete a team by id
 @router.delete("/{team_id}")
-async def delete_team(team_id: int):
-    return {"message": f"Delete team with id {team_id} endpoint"}
+async def delete_team(team_id: int, db: Session = Depends(get_db)) -> TeamDeleteResponse:
+    resp = await delete_team_for_user(team_id, db)
+    return TeamDeleteResponse(ok=resp.ok, message=resp.message)
