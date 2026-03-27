@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.services.team.teammodels import (
     TeamCreateResponse,
@@ -21,7 +22,7 @@ async def create_team_for_user(
 async def delete_team_for_user(teamId: int, db: Session) -> TeamDeleteResponse:
     team = db.get(TeamModel, teamId)
     if team is None:
-        return TeamDeleteResponse(ok=True, message="Team has already been deleetd")
+        return TeamDeleteResponse(ok=True, message="Team has already been deleted")
     db.delete(team)
     db.commit()
     return TeamDeleteResponse(
@@ -29,10 +30,25 @@ async def delete_team_for_user(teamId: int, db: Session) -> TeamDeleteResponse:
     )
 
 
-async def update_team_for_user(teamId: int, teamName: str, db: Session) -> TeamUpdateResponse:
+async def update_team_for_user(
+    teamId: int, teamName: str, db: Session
+) -> TeamUpdateResponse:
     team = db.get(TeamModel, teamId)
     if team is None:
-        return TeamUpdateResponse(ok=False, message="This team does not exist in the database")
+        return TeamUpdateResponse(
+            ok=False, message="This team does not exist in the database"
+        )
     team.team_name = teamName
     db.commit()
     return TeamUpdateResponse(ok=True, message="Team has been updated")
+
+
+async def get_team_for_user(teamId: int, db: Session):
+    team = db.get(TeamModel, teamId)
+    return team
+
+
+async def get_all_teams_for_a_user_func(userId, db: Session):
+    stmt = select(TeamModel).where(TeamModel.user_id == userId)
+    result = db.execute(stmt).scalars().all()
+    return result
